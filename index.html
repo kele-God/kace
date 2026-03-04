@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kace Technologies — Software Consulting & Development</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #0d0f14; --paper: #f5f2ec; --sand: #e8e2d6;
+      --amber: #d4820a; --amber2: #f0a830; --rust: #c04a1e;
+      --teal: #0f7c6e; --muted: #6b6660; --radius: 4px;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; font-size: 16px; line-height: 1.6; overflow-x: hidden; cursor: none; }
+
+    /* cursor */
+    #cursor { position: fixed; top: 0; left: 0; width: 10px; height: 10px; background: var(--amber); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: width .2s, height .2s, background .2s; mix-blend-mode: multiply; }
+    #cursor.big { width: 36px; height: 36px; background: var(--amber2); }
+
+    /* noise */
+    body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); opacity: .025; pointer-events: none; z-index: 9000; }
+
+    /* ── NAV ── */
+    nav { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1.4rem 5vw; z-index: 300; background: transparent; transition: background .4s, box-shadow .4s; }
+    nav.scrolled { background: rgba(245,242,236,.95); backdrop-filter: blur(14px); box-shadow: 0 1px 0 rgba(0,0,0,.08); }
+    .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem; letter-spacing: -.02em; color: var(--ink); text-decoration: none; position: relative; z-index: 2; }
+    .nav-logo span { color: var(--amber); }
+    .nav-links { display: flex; gap: 2.4rem; list-style: none; align-items: center; }
+    .nav-links a { text-decoration: none; font-size: .88rem; font-weight: 500; letter-spacing: .04em; color: var(--muted); text-transform: uppercase; transition: color .2s; }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-cta { background: var(--ink); color: var(--paper) !important; padding: .5rem 1.2rem; border-radius: var(--radius); transition: background .2s !important; }
+    .nav-cta:hover { background: var(--amber) !important; color: var(--ink) !important; }
+
+    /* hamburger */
+    .nav-burger { display: none; flex-direction: column; justify-content: center; align-items: center; width: 40px; height: 40px; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; position: relative; z-index: 2; }
+    .nav-burger span { display: block; width: 22px; height: 2px; background: var(--ink); border-radius: 2px; transition: transform .3s ease, opacity .2s ease, width .3s ease; transform-origin: center; }
+    .nav-burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-burger.open span:nth-child(2) { opacity: 0; width: 0; }
+    .nav-burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* mobile drawer */
+    .mobile-menu { display: none; position: fixed; inset: 0; background: var(--paper); z-index: 250; flex-direction: column; padding: 0 6vw; overflow: hidden; transform: translateX(100%); transition: transform .4s cubic-bezier(.77,0,.18,1); }
+    .mobile-menu.open { transform: translateX(0); }
+    .mobile-menu-inner { display: flex; flex-direction: column; height: 100%; padding-top: 90px; padding-bottom: 2rem; }
+    .mobile-nav-links { list-style: none; display: flex; flex-direction: column; gap: 0; margin-bottom: 2.5rem; }
+    .mobile-nav-links li { border-bottom: 1px solid rgba(0,0,0,.06); overflow: hidden; opacity: 0; transform: translateX(24px); transition: opacity .35s ease, transform .35s ease; }
+    .mobile-menu.open .mobile-nav-links li:nth-child(1) { opacity:1; transform:none; transition-delay:.08s; }
+    .mobile-menu.open .mobile-nav-links li:nth-child(2) { opacity:1; transform:none; transition-delay:.13s; }
+    .mobile-menu.open .mobile-nav-links li:nth-child(3) { opacity:1; transform:none; transition-delay:.18s; }
+    .mobile-menu.open .mobile-nav-links li:nth-child(4) { opacity:1; transform:none; transition-delay:.23s; }
+    .mobile-menu.open .mobile-nav-links li:nth-child(5) { opacity:1; transform:none; transition-delay:.28s; }
+    .mobile-menu.open .mobile-nav-links li:nth-child(6) { opacity:1; transform:none; transition-delay:.33s; }
+    .mobile-nav-links a { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; font-family: 'Syne', sans-serif; font-size: 1.65rem; font-weight: 700; letter-spacing: -.02em; color: var(--ink); text-decoration: none; transition: color .2s; }
+    .mobile-nav-links a:hover { color: var(--amber); }
+    .mn-arrow { font-size: 1.2rem; color: var(--amber); opacity: 0; transform: translateX(-10px); transition: opacity .2s, transform .2s; }
+    .mobile-nav-links a:hover .mn-arrow { opacity: 1; transform: translateX(0); }
+    .mobile-cta-row { display: flex; flex-direction: column; gap: .8rem; opacity: 0; transform: translateY(12px); transition: opacity .35s .38s ease, transform .35s .38s ease; }
+    .mobile-menu.open .mobile-cta-row { opacity: 1; transform: none; }
+    .mobile-cta { background: var(--ink); color: var(--paper); padding: 1rem 2rem; border-radius: var(--radius); font-size: .95rem; font-weight: 500; text-decoration: none; text-align: center; transition: background .2s; }
+    .mobile-cta:hover { background: var(--amber); color: var(--ink); }
+    .mobile-cta.outline { background: transparent; color: var(--ink); border: 1.5px solid rgba(0,0,0,.15); }
+    .mobile-cta.outline:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+    .mobile-social { display: flex; gap: 1.4rem; margin-top: auto; padding-top: 1.5rem; opacity: 0; transition: opacity .3s .44s ease; }
+    .mobile-menu.open .mobile-social { opacity: 1; }
+    .mobile-social a { font-size: .76rem; font-weight: 500; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .2s; }
+    .mobile-social a:hover { color: var(--amber); }
+    .mobile-footer-note { font-size: .75rem; color: rgba(107,102,96,.5); padding-top: .8rem; }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-burger { display: flex; }
+      .mobile-menu { display: flex; }
+    }
+
+    /* ── SUBPAGE OVERLAY ── */
+    .subpage { display: none; position: fixed; inset: 0; background: var(--paper); z-index: 200; overflow-y: auto; animation: slideUp .35s ease; }
+    .subpage.active { display: block; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .subpage-nav { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 5vw; background: rgba(245,242,236,.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,.07); z-index: 10; }
+    .subpage-inner { max-width: 1100px; margin: 0 auto; padding: 5rem 5vw 6rem; }
+    .subpage-back { display: inline-flex; align-items: center; gap: .5rem; font-size: .82rem; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--amber); text-decoration: none; transition: gap .2s; }
+    .subpage-back:hover { gap: .8rem; }
+    .subpage-eyebrow { display: inline-flex; align-items: center; gap: .5rem; font-size: .75rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--amber); margin-bottom: .8rem; }
+    .subpage-eyebrow::before { content: ''; width: 20px; height: 1px; background: var(--amber); }
+    .subpage-h1 { font-family: 'Syne', sans-serif; font-size: clamp(2.2rem, 4vw, 3.4rem); font-weight: 800; letter-spacing: -.03em; line-height: 1.06; margin-bottom: 1.2rem; }
+    .subpage-lead { font-size: 1.05rem; font-weight: 300; color: var(--muted); max-width: 600px; margin-bottom: 3.5rem; }
+    .sp-divider { height: 1px; background: rgba(0,0,0,.08); margin: 3rem 0; }
+    .sp-section-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.5rem; }
+    .sp-two { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+    .sp-three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .sp-four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.4rem; }
+
+    /* HERO */
+    #hero { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; align-items: center; padding: 10vh 5vw 6vh; position: relative; overflow: hidden; }
+    .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 60% at 80% 50%, rgba(212,130,10,.1) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 20% 80%, rgba(15,124,110,.08) 0%, transparent 60%); }
+    .hero-eyebrow { display: inline-flex; align-items: center; gap: .5rem; font-size: .78rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--amber); margin-bottom: 1.4rem; opacity: 0; transform: translateY(18px); animation: up .7s .1s forwards; }
+    .hero-eyebrow::before { content: ''; display: block; width: 28px; height: 1px; background: var(--amber); }
+    .hero-h1 { font-family: 'Syne', sans-serif; font-size: clamp(3rem, 5.5vw, 5.4rem); font-weight: 800; line-height: 1.03; letter-spacing: -.03em; margin-bottom: 1.6rem; opacity: 0; transform: translateY(22px); animation: up .75s .25s forwards; }
+    .hero-h1 em { font-style: normal; background: linear-gradient(135deg, var(--amber) 0%, var(--rust) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-sub { font-size: 1.1rem; font-weight: 300; color: var(--muted); max-width: 420px; margin-bottom: 2.6rem; opacity: 0; transform: translateY(20px); animation: up .7s .42s forwards; }
+    .hero-actions { display: flex; gap: 1rem; align-items: center; opacity: 0; transform: translateY(18px); animation: up .7s .56s forwards; }
+    .btn-primary { background: var(--ink); color: var(--paper); padding: .85rem 2rem; border-radius: var(--radius); font-size: .9rem; font-weight: 500; text-decoration: none; transition: background .2s, transform .15s; display: inline-block; }
+    .btn-primary:hover { background: var(--amber); color: var(--ink); transform: translateY(-2px); }
+    .btn-outline { border: 1.5px solid rgba(13,15,20,.25); color: var(--ink); padding: .85rem 1.8rem; border-radius: var(--radius); font-size: .9rem; font-weight: 500; text-decoration: none; transition: border-color .2s; display: inline-flex; align-items: center; gap: .5rem; }
+    .btn-outline:hover { border-color: var(--ink); }
+    .btn-outline svg { transition: transform .2s; }
+    .btn-outline:hover svg { transform: translateX(4px); }
+    .hero-right { display: flex; justify-content: flex-end; align-items: center; padding-left: 4vw; opacity: 0; transform: translateX(30px); animation: fadeRight .9s .5s forwards; }
+    .hero-card-stack { position: relative; width: 380px; height: 420px; }
+    .hcard { position: absolute; background: var(--ink); border-radius: 16px; padding: 2rem; color: var(--paper); }
+    .hcard-1 { width: 300px; bottom: 0; left: 0; background: linear-gradient(145deg, #1a1e27, #0d0f14); transform: rotate(-4deg); }
+    .hcard-2 { width: 320px; top: 0; right: 0; background: linear-gradient(145deg, var(--amber), var(--rust)); color: var(--ink); transform: rotate(2.5deg); }
+    .hcard-3 { width: 290px; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--ink); z-index: 2; }
+    .hcard-label { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; opacity: .6; margin-bottom: .6rem; }
+    .hcard-value { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 700; line-height: 1; }
+    .hcard-sub { font-size: .8rem; opacity: .6; margin-top: .3rem; }
+    .hcard-icon { width: 40px; height: 40px; border-radius: 8px; background: rgba(255,255,255,.12); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; font-size: 1.2rem; }
+    .hcard-2 .hcard-icon { background: rgba(0,0,0,.1); }
+
+    /* ticker */
+    .ticker-wrap { overflow: hidden; border-top: 1px solid rgba(0,0,0,.1); border-bottom: 1px solid rgba(0,0,0,.1); padding: .9rem 0; background: var(--sand); }
+    .ticker-track { display: flex; animation: ticker 22s linear infinite; white-space: nowrap; }
+    .ticker-item { display: inline-flex; align-items: center; gap: 1rem; font-size: .78rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 0 2.5rem; }
+    .ticker-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--amber); }
+    @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* sections shared */
+    section { padding: 7rem 5vw; }
+    .section-label { display: inline-flex; align-items: center; gap: .5rem; font-size: .75rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--amber); margin-bottom: 1rem; }
+    .section-label::before { content: ''; width: 20px; height: 1px; background: var(--amber); }
+    .section-h2 { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 3.5vw, 3.2rem); font-weight: 800; letter-spacing: -.03em; line-height: 1.08; margin-bottom: 1.4rem; }
+    .section-intro { font-size: 1.05rem; color: var(--muted); max-width: 520px; font-weight: 300; }
+
+    /* services section */
+    #services { background: var(--ink); color: var(--paper); }
+    #services .section-label { color: var(--amber2); }
+    #services .section-label::before { background: var(--amber2); }
+    #services .section-intro { color: rgba(245,242,236,.55); }
+    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 4rem; border: 1px solid rgba(255,255,255,.07); border-radius: 12px; overflow: hidden; }
+    .service-card { padding: 2.5rem 2rem; background: rgba(255,255,255,.02); transition: background .25s; position: relative; overflow: hidden; }
+    .service-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--amber), var(--rust)); transform: scaleX(0); transform-origin: left; transition: transform .3s ease; }
+    .service-card:hover { background: rgba(255,255,255,.05); }
+    .service-card:hover::after { transform: scaleX(1); }
+    .service-num { font-family: 'Syne', sans-serif; font-size: .7rem; font-weight: 700; letter-spacing: .15em; color: var(--amber); margin-bottom: 1.2rem; opacity: .7; }
+    .service-icon { font-size: 1.8rem; margin-bottom: 1.1rem; }
+    .service-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: .7rem; color: var(--paper); }
+    .service-desc { font-size: .88rem; color: rgba(245,242,236,.5); line-height: 1.7; }
+
+    /* why */
+    #why { background: var(--paper); }
+    .why-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 6vw; align-items: center; margin-top: 3rem; }
+    .why-visual { position: relative; height: 500px; }
+    .why-blob { position: absolute; border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; animation: blobber 7s ease-in-out infinite; }
+    .why-blob-1 { width: 340px; height: 340px; background: linear-gradient(135deg, rgba(212,130,10,.18), rgba(192,74,30,.12)); top: 40px; left: 20px; }
+    .why-blob-2 { width: 260px; height: 260px; background: rgba(15,124,110,.1); bottom: 40px; right: 10px; animation-delay: -3s; border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%; }
+    @keyframes blobber { 0%, 100% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; } 50% { border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%; } }
+    .why-stat-grid { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-content: center; padding: 2rem; }
+    .stat-box { background: white; border-radius: 12px; padding: 1.6rem 1.4rem; box-shadow: 0 4px 24px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.04); }
+    .stat-box:first-child { grid-column: span 2; }
+    .stat-n { font-family: 'Syne', sans-serif; font-size: 2.4rem; font-weight: 800; color: var(--ink); letter-spacing: -.04em; }
+    .stat-n span { color: var(--amber); }
+    .stat-label { font-size: .82rem; color: var(--muted); margin-top: .2rem; }
+    .why-points { list-style: none; margin-top: 2rem; }
+    .why-points li { display: flex; gap: 1rem; align-items: flex-start; padding: 1rem 0; border-bottom: 1px solid rgba(0,0,0,.06); }
+    .why-points li:last-child { border-bottom: none; }
+    .why-check { flex-shrink: 0; width: 24px; height: 24px; background: var(--amber); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .7rem; color: var(--ink); margin-top: 2px; }
+    .why-pt-title { font-weight: 500; font-size: .95rem; margin-bottom: .2rem; }
+    .why-pt-desc { font-size: .85rem; color: var(--muted); }
+
+    /* process */
+    #process { background: var(--sand); }
+    .process-track { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 4rem; position: relative; }
+    .process-track::before { content: ''; position: absolute; top: 40px; left: 12%; right: 12%; height: 1px; background: rgba(0,0,0,.1); }
+    .process-step { padding: 0 1.2rem; text-align: center; }
+    .process-num { width: 52px; height: 52px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,.12); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.2rem; font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 700; background: var(--sand); position: relative; z-index: 1; transition: background .25s, border-color .25s; }
+    .process-step:hover .process-num { background: var(--amber); border-color: var(--amber); color: var(--ink); }
+    .process-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .95rem; margin-bottom: .5rem; }
+    .process-desc { font-size: .83rem; color: var(--muted); line-height: 1.65; }
+
+    /* industries */
+    #industries { background: var(--paper); }
+    .industries-scroll { display: flex; gap: 1rem; margin-top: 3rem; flex-wrap: wrap; }
+    .ind-pill { display: flex; align-items: center; gap: .6rem; padding: .7rem 1.4rem; border: 1.5px solid rgba(0,0,0,.1); border-radius: 999px; font-size: .88rem; color: var(--ink); transition: all .2s; cursor: default; }
+    .ind-pill:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+    .ind-pill-icon { font-size: 1rem; }
+
+    /* stack */
+    #stack { background: var(--paper); padding-top: 0; }
+    .stack-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: .8rem; margin-top: 3rem; }
+    .stack-item { background: white; border: 1px solid rgba(0,0,0,.07); border-radius: 10px; padding: 1.2rem .8rem; text-align: center; font-size: .78rem; font-weight: 500; color: var(--muted); transition: box-shadow .2s, transform .15s; }
+    .stack-item:hover { box-shadow: 0 6px 20px rgba(0,0,0,.08); transform: translateY(-3px); color: var(--ink); }
+    .stack-item .s-icon { font-size: 1.5rem; margin-bottom: .5rem; display: block; }
+
+    /* testimonials */
+    #testimonials { background: var(--ink); color: var(--paper); }
+    #testimonials .section-label { color: var(--amber2); }
+    #testimonials .section-label::before { background: var(--amber2); }
+    .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3.5rem; }
+    .testi-card { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); border-radius: 12px; padding: 2rem; }
+    .testi-quote { font-size: 2rem; color: var(--amber); font-family: 'Syne', sans-serif; font-weight: 800; line-height: 1; margin-bottom: 1rem; }
+    .testi-body { font-size: .9rem; color: rgba(245,242,236,.7); line-height: 1.75; margin-bottom: 1.5rem; }
+    .testi-author { display: flex; align-items: center; gap: .8rem; }
+    .testi-avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, var(--amber), var(--rust)); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: .8rem; font-weight: 700; color: var(--ink); }
+    .testi-name { font-size: .88rem; font-weight: 500; color: var(--paper); }
+    .testi-role { font-size: .78rem; color: rgba(245,242,236,.4); }
+
+    /* cta */
+    #cta-band { background: linear-gradient(135deg, var(--amber) 0%, var(--rust) 100%); padding: 6rem 5vw; text-align: center; position: relative; overflow: hidden; }
+    #cta-band::before { content: 'KACE'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: 'Syne', sans-serif; font-size: 22vw; font-weight: 800; color: rgba(255,255,255,.07); pointer-events: none; white-space: nowrap; }
+    .cta-h2 { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 4vw, 3.8rem); font-weight: 800; letter-spacing: -.03em; color: var(--ink); margin-bottom: 1rem; position: relative; }
+    .cta-sub { font-size: 1.05rem; color: rgba(13,15,20,.65); margin-bottom: 2.4rem; position: relative; }
+    .btn-dark { background: var(--ink); color: var(--paper); padding: 1rem 2.4rem; border-radius: var(--radius); font-size: .95rem; font-weight: 500; text-decoration: none; display: inline-block; transition: background .2s, transform .15s; position: relative; }
+    .btn-dark:hover { background: #1e2330; transform: translateY(-2px); }
+
+    /* contact */
+    #contact { background: var(--paper); }
+    .contact-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 6vw; margin-top: 3rem; align-items: start; }
+    .contact-info-items { margin-top: 2rem; display: flex; flex-direction: column; gap: 1.4rem; }
+    .ci-item { display: flex; gap: 1rem; align-items: flex-start; }
+    .ci-dot { width: 36px; height: 36px; border-radius: 8px; background: var(--sand); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+    .ci-label { font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--amber); margin-bottom: .2rem; }
+    .ci-val { font-size: .9rem; color: var(--ink); }
+    .ci-val a:hover { text-decoration: underline; color: var(--amber) !important; }
+    .contact-form { display: flex; flex-direction: column; gap: 1.2rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: .4rem; }
+    .form-group label { font-size: .78rem; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+    .form-group input, .form-group textarea, .form-group select { background: white; border: 1.5px solid rgba(0,0,0,.1); border-radius: var(--radius); padding: .75rem 1rem; font-family: 'DM Sans', sans-serif; font-size: .9rem; color: var(--ink); outline: none; transition: border-color .2s; }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--amber); }
+    .form-group textarea { resize: vertical; min-height: 120px; }
+    .form-submit { background: var(--ink); color: var(--paper); border: none; padding: .9rem 2rem; border-radius: var(--radius); font-family: 'DM Sans', sans-serif; font-size: .9rem; font-weight: 500; cursor: pointer; transition: background .2s; align-self: flex-start; }
+    .form-submit:hover { background: var(--amber); color: var(--ink); }
+
+    /* footer */
+    footer { background: var(--ink); color: rgba(245,242,236,.5); padding: 4rem 5vw 2.5rem; }
+    .footer-top { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 4vw; padding-bottom: 3rem; border-bottom: 1px solid rgba(255,255,255,.07); }
+    .footer-logo { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; color: var(--paper); margin-bottom: 1rem; display: block; text-decoration: none; }
+    .footer-logo span { color: var(--amber); }
+    .footer-tagline { font-size: .85rem; line-height: 1.7; max-width: 260px; }
+    .footer-col-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .85rem; color: var(--paper); margin-bottom: 1.2rem; }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: .6rem; }
+    .footer-links a { text-decoration: none; font-size: .85rem; color: rgba(245,242,236,.45); transition: color .2s; }
+    .footer-links a:hover { color: var(--amber); }
+    .footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 1.8rem; font-size: .8rem; }
+    .footer-bottom a { color: var(--amber); text-decoration: none; }
+
+    /* animations */
+    @keyframes up { to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeRight { to { opacity: 1; transform: translateX(0); } }
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── SUBPAGE COMPONENTS ── */
+    /* about */
+    .val-card { background: var(--sand); border-radius: 12px; padding: 1.8rem 1.5rem; }
+    .val-icon { font-size: 1.6rem; margin-bottom: .8rem; }
+    .val-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: .5rem; }
+    .val-desc { font-size: .85rem; color: var(--muted); line-height: 1.65; }
+    .timeline { border-left: 2px solid rgba(0,0,0,.1); padding-left: 2rem; display: flex; flex-direction: column; gap: 2rem; }
+    .tl-item { position: relative; }
+    .tl-item::before { content: ''; position: absolute; left: -2.55rem; top: .35rem; width: 10px; height: 10px; border-radius: 50%; background: var(--amber); border: 2px solid var(--paper); box-shadow: 0 0 0 2px var(--amber); }
+    .tl-year { font-family: 'Syne', sans-serif; font-size: .7rem; font-weight: 700; letter-spacing: .1em; color: var(--amber); margin-bottom: .3rem; }
+    .tl-title { font-weight: 600; font-size: .95rem; margin-bottom: .2rem; }
+    .tl-body { font-size: .85rem; color: var(--muted); }
+
+    /* services page */
+    .svc-row { display: grid; grid-template-columns: 70px 1fr; gap: 2rem; padding: 2.5rem 0; border-bottom: 1px solid rgba(0,0,0,.07); }
+    .svc-row:last-child { border-bottom: none; }
+    .svc-n { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; color: var(--sand); letter-spacing: -.04em; line-height: 1; }
+    .svc-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; margin-bottom: .5rem; }
+    .svc-desc { font-size: .92rem; color: var(--muted); margin-bottom: 1rem; line-height: 1.7; }
+    .svc-tags { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .s-tag { font-size: .74rem; font-weight: 500; letter-spacing: .04em; padding: .3rem .8rem; border-radius: 999px; background: var(--sand); color: var(--muted); }
+
+    /* team */
+    .team-card { background: white; border: 1px solid rgba(0,0,0,.07); border-radius: 14px; overflow: hidden; transition: box-shadow .25s, transform .2s; }
+    .team-card:hover { box-shadow: 0 12px 36px rgba(0,0,0,.1); transform: translateY(-4px); }
+    .team-av { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; }
+    .team-info { padding: 1.2rem 1.4rem 1.6rem; }
+    .team-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: .15rem; }
+    .team-role { font-size: .8rem; color: var(--amber); font-weight: 500; margin-bottom: .6rem; }
+    .team-bio { font-size: .82rem; color: var(--muted); line-height: 1.6; }
+
+    /* blog */
+    .blog-card { background: white; border: 1px solid rgba(0,0,0,.07); border-radius: 14px; overflow: hidden; transition: box-shadow .25s, transform .2s; display: flex; flex-direction: column; }
+    .blog-card:hover { box-shadow: 0 10px 30px rgba(0,0,0,.09); transform: translateY(-4px); }
+    .blog-thumb { height: 130px; display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+    .blog-body { padding: 1.4rem; flex: 1; display: flex; flex-direction: column; }
+    .blog-tag { font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--amber); margin-bottom: .6rem; }
+    .blog-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .95rem; line-height: 1.35; margin-bottom: .6rem; }
+    .blog-excerpt { font-size: .83rem; color: var(--muted); line-height: 1.65; flex: 1; margin-bottom: 1rem; }
+    .blog-meta { font-size: .76rem; color: rgba(107,102,96,.6); }
+    .blog-more { display: inline-flex; align-items: center; gap: .35rem; font-size: .82rem; font-weight: 500; color: var(--amber); text-decoration: none; margin-top: .8rem; transition: gap .2s; }
+    .blog-more:hover { gap: .6rem; }
+
+    /* case studies */
+    .case-card { background: var(--ink); color: var(--paper); border-radius: 16px; padding: 2.5rem; transition: transform .2s; display: flex; flex-direction: column; gap: 1.2rem; }
+    .case-card:hover { transform: translateY(-4px); }
+    .case-ind { font-size: .7rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--amber); }
+    .case-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; line-height: 1.25; }
+    .case-desc { font-size: .88rem; color: rgba(245,242,236,.6); line-height: 1.7; }
+    .case-results { display: flex; gap: 1.5rem; }
+    .case-num { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--amber2); line-height: 1; }
+    .case-ml { font-size: .75rem; color: rgba(245,242,236,.45); }
+    .case-tags { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .c-tag { font-size: .72rem; padding: .25rem .7rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.1); color: rgba(245,242,236,.5); }
+
+    /* careers */
+    .job-card { background: white; border: 1px solid rgba(0,0,0,.08); border-radius: 12px; padding: 2rem; transition: box-shadow .2s, border-color .2s; display: flex; gap: 1.5rem; align-items: flex-start; }
+    .job-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,.08); border-color: var(--amber); }
+    .job-icon { width: 46px; height: 46px; border-radius: 10px; background: var(--sand); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+    .job-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: .2rem; }
+    .job-meta { font-size: .8rem; color: var(--muted); margin-bottom: .6rem; }
+    .job-tags { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .j-pill { font-size: .72rem; padding: .25rem .7rem; border-radius: 999px; background: var(--sand); color: var(--muted); }
+    .job-apply { margin-left: auto; align-self: center; background: var(--ink); color: var(--paper); padding: .55rem 1.2rem; border-radius: var(--radius); font-size: .82rem; font-weight: 500; text-decoration: none; white-space: nowrap; transition: background .2s; }
+    .job-apply:hover { background: var(--amber); color: var(--ink); }
+    .perks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; margin-top: 2.5rem; }
+    .perk { background: var(--sand); border-radius: 10px; padding: 1.4rem 1.2rem; display: flex; gap: .8rem; align-items: flex-start; }
+    .perk-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .perk-title { font-weight: 600; font-size: .88rem; margin-bottom: .2rem; }
+    .perk-desc { font-size: .8rem; color: var(--muted); }
+
+    /* responsive */
+    @media (max-width: 1024px) {
+      #hero { grid-template-columns: 1fr; padding-top: 14vh; }
+      .hero-right { display: none; }
+      .services-grid { grid-template-columns: 1fr 1fr; }
+      .why-layout { grid-template-columns: 1fr; }
+      .why-visual { height: 300px; }
+      .process-track { grid-template-columns: 1fr 1fr; }
+      .testi-grid { grid-template-columns: 1fr; }
+      .contact-layout { grid-template-columns: 1fr; }
+      .footer-top { grid-template-columns: 1fr 1fr; }
+      .stack-grid { grid-template-columns: repeat(4, 1fr); }
+      .sp-two { grid-template-columns: 1fr; }
+      .sp-three { grid-template-columns: 1fr 1fr; }
+      .sp-four { grid-template-columns: 1fr 1fr; }
+      .perks { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      .services-grid, .sp-three { grid-template-columns: 1fr; }
+      .process-track { grid-template-columns: 1fr 1fr; }
+      .stack-grid { grid-template-columns: repeat(3, 1fr); }
+      .footer-top { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .sp-four { grid-template-columns: 1fr 1fr; }
+      .perks { grid-template-columns: 1fr; }
+      .job-card { flex-wrap: wrap; }
+      .job-apply { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+<div id="cursor"></div>
+
+<!-- ═══════════════════════════════════
+  SUBPAGES
+═══════════════════════════════════ -->
+
+<!-- ABOUT -->
+<div class="subpage" id="page-about">
+  <div class="subpage-nav">
+    <a class="nav-logo" href="#home">Kace<span>.</span></a>
+    <a class="subpage-back" href="#home">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12 7H2M7 2L2 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back to Home
+    </a>
+  </div>
+  <div class="subpage-inner">
+    <div class="subpage-eyebrow">Our Story</div>
+    <h1 class="subpage-h1">Built in Abuja.<br>Built for the World.</h1>
+    <p class="subpage-lead">Kace Technologies was founded in 2018 by engineers frustrated with the gap between the software Nigerian businesses deserved and what was available locally. We set out to change that.</p>
+    <div class="sp-two">
+      <div>
+        <h2 style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;margin-bottom:1rem;">Who We Are</h2>
+        <p style="font-size:.95rem;color:var(--muted);line-height:1.8;margin-bottom:1rem;">We're a 35-person team of engineers, designers, and strategists who believe Africa's digital economy deserves world-class software. Our team has worked across fintech, healthcare, logistics, and enterprise platforms — bringing that depth to every engagement.</p>
+        <p style="font-size:.95rem;color:var(--muted);line-height:1.8;">We operate from Gwarinpa, Abuja — but our clients span Nigeria, Ghana, Kenya, UK, and the US. We're proud to be Nigeria-based and globally competitive.</p>
+      </div>
+      <div>
+        <h2 style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;margin-bottom:1.5rem;">Our Journey</h2>
+        <div class="timeline">
+          <div class="tl-item"><div class="tl-year">2018</div><div class="tl-title">Kace Technologies Founded</div><div class="tl-body">Started by 4 engineers in Wuse 2, Abuja — with a focus on fintech solutions.</div></div>
+          <div class="tl-item"><div class="tl-year">2019</div><div class="tl-title">First Enterprise Client</div><div class="tl-body">Landed our first major enterprise contract delivering a custom ERP integration for a Lagos logistics firm.</div></div>
+          <div class="tl-item"><div class="tl-year">2021</div><div class="tl-title">Team Expansion & New HQ</div><div class="tl-body">Grew to 20 engineers and moved to our current Gwarinpa office. Launched our mobile app practice.</div></div>
+          <div class="tl-item"><div class="tl-year">2023</div><div class="tl-title">120+ Projects Delivered</div><div class="tl-body">Crossed 120 projects across 9 industries, with clients in 4 countries.</div></div>
+          <div class="tl-item"><div class="tl-year">2025</div><div class="tl-title">Expanding Across Africa</div><div class="tl-body">Opening a second office in Lagos and launching our Cloud Centre of Excellence practice.</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="sp-divider"></div>
+    <h2 style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;margin-bottom:2rem;">Our Core Values</h2>
+    <div class="sp-three">
+      <div class="val-card"><div class="val-icon">🎯</div><div class="val-title">Intentionality</div><div class="val-desc">Every decision — from architecture to typography — is deliberate. We don't ship things we're not proud of.</div></div>
+      <div class="val-card"><div class="val-icon">🤝</div><div class="val-title">Partnership</div><div class="val-desc">We treat every client engagement as if we have equity in the outcome. Your success is our success.</div></div>
+      <div class="val-card"><div class="val-icon">🔬</div><div class="val-title">Craft</div><div class="val-desc">Clean code, thorough tests, thoughtful design. We obsess over details because details compound.</div></div>
+      <div class="val-card"><div class="val-icon">🌍</div><div class="val-title">African Pride</div><div class="val-desc">We're building proof that world-class software comes from Nigeria and Africa at large.</div></div>
+      <div class="val-card"><div class="val-icon">📣</div><div class="val-title">Transparency</div><div class="val-desc">No smoke and mirrors. If something is off-track, we say so early and come with solutions.</div></div>
+      <div class="val-card"><div class="val-icon">🚀</div><div class="val-title">Velocity</div><div class="val-desc">Speed matters in technology. We move fast without breaking things — through process, not luck.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICES PAGE -->
+<div class="subpage" id="page-services-page">
+  <div class="subpage-nav">
+    <a class="nav-logo" href="#home">Kace<span>.</span></a>
+    <a class="subpage-back" href="#home">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12 7H2M7 2L2 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back to Home
+    </a>
+  </div>
+  <div class="subpage-inner">
+    <div class="subpage-eyebrow">What We Do</div>
+    <h1 class="subpage-h1">Services Built for<br>Real Business Problems.</h1>
+    <p class="subpage-lead">We don't sell packages — we solve problems. Every engagement starts with understanding your business, then determining what to build and how.</p>
+    <div class="svc-row"><div class="svc-n">01</div><div><div class="svc-title">⚙️ Custom Software Development</div><div class="svc-desc">Bespoke web and desktop applications built around your unique workflows and business logic. No off-the-shelf compromises, no unnecessary bloat — just software engineered for your specific problem at the quality level that lets you scale confidently.</div><div class="svc-tags"><span class="s-tag">Web Applications</span><span class="s-tag">Desktop Software</span><span class="s-tag">SaaS Platforms</span><span class="s-tag">Internal Tools</span><span class="s-tag">ERP / CRM Systems</span></div></div></div>
+    <div class="svc-row"><div class="svc-n">02</div><div><div class="svc-title">📱 Mobile App Development</div><div class="svc-desc">iOS and Android applications using native and cross-platform technologies. From consumer apps that delight millions to enterprise apps with complex offline-first requirements — we handle UX, backend integration, app store deployment, and ongoing support.</div><div class="svc-tags"><span class="s-tag">Flutter</span><span class="s-tag">React Native</span><span class="s-tag">iOS (Swift)</span><span class="s-tag">Android (Kotlin)</span><span class="s-tag">Offline-first</span></div></div></div>
+    <div class="svc-row"><div class="svc-n">03</div><div><div class="svc-title">☁️ Cloud & DevOps</div><div class="svc-desc">From greenfield cloud architecture to legacy migration, we help organisations leverage the cloud reliably and cost-efficiently. CI/CD pipelines, infrastructure-as-code, and monitoring systems that reduce deployment risk and increase release velocity.</div><div class="svc-tags"><span class="s-tag">AWS</span><span class="s-tag">GCP</span><span class="s-tag">Azure</span><span class="s-tag">Docker / Kubernetes</span><span class="s-tag">Terraform</span><span class="s-tag">CI/CD</span></div></div></div>
+    <div class="svc-row"><div class="svc-n">04</div><div><div class="svc-title">🔌 API & Systems Integration</div><div class="svc-desc">We design and build integration layers — APIs, webhooks, ETL pipelines, and middleware — that connect your ERP, CRM, payment gateways, third-party services, and legacy platforms into a coherent, reliable data ecosystem.</div><div class="svc-tags"><span class="s-tag">REST / GraphQL</span><span class="s-tag">Webhooks</span><span class="s-tag">ETL Pipelines</span><span class="s-tag">Legacy Systems</span><span class="s-tag">Payment APIs</span></div></div></div>
+    <div class="svc-row"><div class="svc-n">05</div><div><div class="svc-title">📐 UI/UX Design</div><div class="svc-desc">User research, information architecture, and visual design that crafts interfaces that are intuitive, accessible, and a pleasure to use. We deliver Figma prototypes, design systems, and complete handoff documentation.</div><div class="svc-tags"><span class="s-tag">User Research</span><span class="s-tag">Wireframing</span><span class="s-tag">Figma Prototypes</span><span class="s-tag">Design Systems</span><span class="s-tag">Accessibility</span></div></div></div>
+    <div class="svc-row"><div class="svc-n">06</div><div><div class="svc-title">🧭 Technology Consulting</div><div class="svc-desc">Stack selection, architecture reviews, technology roadmaps, due diligence for acquisitions, and digital transformation strategy — bringing real engineering experience to your most important technology decisions.</div><div class="svc-tags"><span class="s-tag">Architecture Reviews</span><span class="s-tag">Stack Selection</span><span class="s-tag">Roadmap Planning</span><span class="s-tag">Tech Due Diligence</span></div></div></div>
+    <div class="sp-divider"></div>
+    <div style="text-align:center"><h2 style="font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;margin-bottom:.8rem;">Not sure which service you need?</h2><p style="color:var(--muted);margin-bottom:1.8rem;">Tell us about your challenge and we'll figure it out together.</p><a href="#contact" class="btn-primary">Talk to Us →</a></div>
+  </div>
+</div>
+
+<!-- TEAM -->
+<div class="subpage" id="page-team">
+  <div class="subpage-nav">
+    <a class="nav-logo" href="#home">Kace<span>.</span></a>
+    <a class="subpage-back" href="#home">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12 7H2M7 2L2 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back to Home
+    </a>
+  </div>
+  <div class="subpage-inner">
+    <div class="subpage-eyebrow">The People</div>
+    <h1 class="subpage-h1">Meet the Team<br>Behind the Work.</h1>
+    <p class="subpage-lead">35 engineers, designers, and strategists who care deeply about their craft — and about the clients they serve.</p>
+    <div class="sp-section-title" style="margin-bottom:1.5rem">Leadership</div>
+    <div class="sp-four" style="margin-bottom:3rem">
+      <div class="team-card"><div class="team-av" style="background:linear-gradient(135deg,rgba(212,130,10,.12),rgba(192,74,30,.08))">👨🏾‍💻</div><div class="team-info"><div class="team-name">Chukwuemeka Obi</div><div class="team-role">Co-founder & CEO</div><div class="team-bio">Former senior engineer at Interswitch. 12+ years building fintech and enterprise software across Nigeria and the UK.</div></div></div>
+      <div class="team-card"><div class="team-av" style="background:linear-gradient(135deg,rgba(15,124,110,.1),rgba(15,124,110,.04))">👩🏽‍💻</div><div class="team-info"><div class="team-name">Adaora Nwosu</div><div class="team-role">Co-founder & CTO</div><div class="team-bio">PhD Computer Science (UCL). Leads architecture and engineering quality. Specialist in distributed systems and cloud infrastructure.</div></div></div>
+      <div class="team-card"><div class="team-av" style="background:linear-gradient(135deg,rgba(212,130,10,.1),rgba(240,168,48,.06))">👨🏾‍🎨</div><div class="team-info"><div class="team-name">Tunde Adeola</div><div class="team-role">Head of Design</div><div class="team-bio">10 years designing digital products for African markets. Previously at Paystack and Flutterwave.</div></div></div>
+      <div class="team-card"><div class="team-av" style="background:linear-gradient(135deg,rgba(192,74,30,.1),rgba(212,130,10,.06))">👩🏾‍💼</div><div class="team-info"><div class="team-name">Ngozi Eze</div><div class="team-role">Head of Client Success</div><div class="team-bio">Ensures every engagement delivers on its promise. Background in project management and product ownership.</div></div></div>
+    </div>
+    <div class="sp-section-title" style="margin-bottom:1.5rem">Engineering Leads</div>
+    <div class="sp-four" style="margin-bottom:3rem">
+      <div class="team-card"><div class="team-av" style="background:linear-gradient(135deg,rgba(212,130,10,.08),rgba(15,124,110,.06))">👨🏽‍💻</div><div class="team-info"><div class="team-name">Segun Afolabi</div><div class="team-role">Lead — Backend</div><div class="team-bio">Node.js, Python, and Go specialist. Passionate about clean APIs and scalable data architecture.</div></div></div>
+      <div class="team-card"><div class="team-av" style="background:linear-gradient(135deg,rgba(15,124,110,.08),rgba(212,130,10,.06))">👩🏾‍💻</div><div class="team-info"><div class="team-name">Amina Yusuf</div><div class="team-role">Lead — Mobile</div><div class="team-bio">Flutter and React Native lead with 8 years delivering consumer and enterprise apps across Africa.</div></div></div>
+      <div class="team-card"><div class="team-av" style="background:linear-gradient(135deg,rgba(192,74,30,.08),rgba(240,168,48,.06))">👨🏾‍🔧</div><div class="team-info"><div class="team-name">Kelechi Okonkwo</div><div class="team-role">Lead — DevOps</div><div class="team-bio">AWS certified architect. Runs our cloud infrastructure and CI/CD practice.</div></div></div>
+      <div class="team-card"><div class="team-av" style="background:linear-gradient(135deg,rgba(240,168,48,.1),rgba(192,74,30,.06))">👩🏽‍💻</div><div class="team-info"><div class="team-name">Blessing Okoro</div><div class="team-role">Lead — Frontend</div><div class="team-bio">React and TypeScript specialist obsessed with performance, accessibility, and pixel-perfect implementation.</div></div></div>
+    </div>
+    <div style="background:var(--sand);border-radius:16px;padding:2.5rem;text-align:center">
+      <div style="font-size:1.5rem;margin-bottom:.8rem">🤝</div>
+      <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.2rem;margin-bottom:.6rem">Want to join the team?</h3>
+      <p style="font-size:.92rem;color:var(--muted);margin-bottom:1.4rem">We're always looking for talented engineers, designers, and strategists who share our values.</p>
+      <a href="#careers" class="btn-primary">See Open Roles →</a>
+    </div>
+  </div>
+</div>
+
+<!-- BLOG -->
+<div class="subpage" id="page-blog">
+  <div class="subpage-nav">
+    <a class="nav-logo" href="#home">Kace<span>.</span></a>
+    <a class="subpage-back" href="#home">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12 7H2M7 2L2 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back to Home
+    </a>
+  </div>
+  <div class="subpage-inner">
+    <div class="subpage-eyebrow">Insights & Ideas</div>
+    <h1 class="subpage-h1">The Kace Blog.</h1>
+    <p class="subpage-lead">Thoughts on software engineering, product development, the African tech ecosystem, and building companies that last.</p>
+    <div class="sp-three">
+      <div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,rgba(212,130,10,.12),rgba(192,74,30,.08))">🏗️</div><div class="blog-body"><div class="blog-tag">Architecture</div><div class="blog-title">Why Most Nigerian Fintechs Outgrow Their Architecture in Year 3</div><div class="blog-excerpt">The technical debt that accumulates in hypergrowth can be existential. We break down the architectural decisions that come back to bite you — and how to avoid them from day one.</div><div class="blog-meta">Adaora Nwosu · 12 min read · Nov 2025</div><a href="/cdn-cgi/l/email-protection#b1d9d4dddddef1dad0d2d4c5d4d2d9dfdeddded6d8d4c29fd2dedc8ec2c4d3dbd4d2c58cf3ddded68b91f0c3d2d9d8c5d4d2c5c4c3d4" class="blog-more">Read article →</a></div></div>
+      <div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,rgba(15,124,110,.1),rgba(15,124,110,.04))">📱</div><div class="blog-body"><div class="blog-tag">Mobile</div><div class="blog-title">Flutter vs React Native in 2025: An Honest Comparison for African Markets</div><div class="blog-excerpt">Both frameworks have matured significantly. But when you factor in low-bandwidth environments and device diversity in Nigeria — the calculus shifts.</div><div class="blog-meta">Amina Yusuf · 9 min read · Oct 2025</div><a href="/cdn-cgi/l/email-protection#650d0009090a250e0406001100060d0b0a090a020c00164b060a085a1610070f0006115827090a025f45280a070c0900" class="blog-more">Read article →</a></div></div>
+      <div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,rgba(240,168,48,.12),rgba(212,130,10,.06))">☁️</div><div class="blog-body"><div class="blog-tag">Cloud</div><div class="blog-title">AWS vs Azure in Nigeria: Latency, Cost, and What Nobody Tells You</div><div class="blog-excerpt">We've run workloads on both. Here's our honest breakdown of latency, egress costs, support quality, and compliance considerations for Nigerian businesses.</div><div class="blog-meta">Kelechi Okonkwo · 11 min read · Sep 2025</div><a href="/cdn-cgi/l/email-protection#b7dfd2dbdbd8f7dcd6d4d2c3d2d4dfd9d8dbd8d0ded2c499d4d8da88c4c2d5ddd2d4c38af5dbd8d08d97f4dbd8c2d3" class="blog-more">Read article →</a></div></div>
+      <div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,rgba(192,74,30,.1),rgba(212,130,10,.06))">🎨</div><div class="blog-body"><div class="blog-tag">Design</div><div class="blog-title">Designing for Users Who Share One Phone Across a Family</div><div class="blog-excerpt">Multi-user, low-storage, shared-device patterns are realities for millions of Nigerians. Here's how to design inclusively without compromising the experience for everyone else.</div><div class="blog-meta">Tunde Adeola · 7 min read · Aug 2025</div><a href="/cdn-cgi/l/email-protection#90f8f5fcfcffd0fbf1f3f5e4f5f3f8fefffcfff7f9f5e3bef3fffdafe3e5f2faf5f3e4add2fcfff7aab0d4f5e3f9f7fe" class="blog-more">Read article →</a></div></div>
+      <div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,rgba(15,124,110,.08),rgba(240,168,48,.06))">🔐</div><div class="blog-body"><div class="blog-tag">Security</div><div class="blog-title">NDPR Compliance for Software Teams: A Practical Checklist</div><div class="blog-excerpt">Nigeria's Data Protection Regulation has teeth now. We walk through exactly what your engineering and product team needs to do to stay compliant with the NDPC.</div><div class="blog-meta">Chukwuemeka Obi · 10 min read · Jul 2025</div><a href="/cdn-cgi/l/email-protection#0d65686161624d666c6e6879686e65636261626a64687e236e6260327e786f67686e79304f61626a372d5e686e787f647974" class="blog-more">Read article →</a></div></div>
+      <div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,rgba(212,130,10,.1),rgba(15,124,110,.06))">🤝</div><div class="blog-body"><div class="blog-tag">Process</div><div class="blog-title">How to Work with a Software Agency Without Losing Your Mind</div><div class="blog-excerpt">From the agency side: the decisions clients make in week one that determine whether the project goes well or badly — and what to do differently.</div><div class="blog-meta">Ngozi Eze · 8 min read · Jun 2025</div><a href="/cdn-cgi/l/email-protection#e68e838a8a89a68d8785839283858e88898a89818f8395c885898bd99593848c838592dba48a8981dcc6b6948985839595" class="blog-more">Read article →</a></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CASE STUDIES -->
+<div class="subpage" id="page-case-studies">
+  <div class="subpage-nav">
+    <a class="nav-logo" href="#home">Kace<span>.</span></a>
+    <a class="subpage-back" href="#home">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12 7H2M7 2L2 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back to Home
+    </a>
+  </div>
+  <div class="subpage-inner">
+    <div class="subpage-eyebrow">Our Work</div>
+    <h1 class="subpage-h1">Real Projects.<br>Measurable Results.</h1>
+    <p class="subpage-lead">We let the outcomes speak for themselves. A selection of recent engagements and what they delivered.</p>
+    <div class="sp-two">
+      <div class="case-card"><div class="case-ind">Fintech · Lagos</div><div class="case-title">Rebuilding a Lending Platform for 10× Scale</div><div class="case-desc">LendPath's original monolith was crumbling under growth. We migrated them to microservices, rebuilt the loan origination engine, and integrated with 4 credit bureaus — in 16 weeks.</div><div class="case-results"><div><div class="case-num">10×</div><div class="case-ml">Throughput increase</div></div><div><div class="case-num">99.97%</div><div class="case-ml">Uptime post-launch</div></div><div><div class="case-num">16 wks</div><div class="case-ml">Delivery time</div></div></div><div class="case-tags"><span class="c-tag">Node.js</span><span class="c-tag">PostgreSQL</span><span class="c-tag">AWS</span><span class="c-tag">Microservices</span></div></div>
+      <div class="case-card"><div class="case-ind">EdTech · Abuja</div><div class="case-title">ScholarBridge: Student Loan Platform from Zero to Live</div><div class="case-desc">End-to-end build of a student financing platform — loan application, KYC verification, disbursement, and repayment tracking. Launched in 12 weeks with 3,000 applicants in month one.</div><div class="case-results"><div><div class="case-num">3,000+</div><div class="case-ml">Month-1 applicants</div></div><div><div class="case-num">12 wks</div><div class="case-ml">Zero to launch</div></div><div><div class="case-num">₦0</div><div class="case-ml">Fraud losses yr 1</div></div></div><div class="case-tags"><span class="c-tag">React</span><span class="c-tag">Python</span><span class="c-tag">Flutter</span><span class="c-tag">Firebase</span></div></div>
+      <div class="case-card"><div class="case-ind">Logistics · Port Harcourt</div><div class="case-title">ERP + 3PL Integration for SwiftHaul</div><div class="case-desc">Connected SwiftHaul's SAP ERP to three third-party logistics APIs and a custom driver dispatch app. Eliminated manual reconciliation costing 80+ man-hours per week.</div><div class="case-results"><div><div class="case-num">80 hrs</div><div class="case-ml">Saved weekly</div></div><div><div class="case-num">3</div><div class="case-ml">APIs integrated</div></div><div><div class="case-num">99.4%</div><div class="case-ml">Data accuracy</div></div></div><div class="case-tags"><span class="c-tag">SAP Integration</span><span class="c-tag">Node.js</span><span class="c-tag">MongoDB</span><span class="c-tag">React Native</span></div></div>
+      <div class="case-card"><div class="case-ind">Healthcare · Abuja</div><div class="case-title">HealthBridge: Telemedicine & EMR Platform</div><div class="case-desc">HIPAA-aligned telemedicine platform for a network of 12 private clinics — covering video consultations, EMR, e-prescriptions, and lab results. Deployed across all locations in 20 weeks.</div><div class="case-results"><div><div class="case-num">12</div><div class="case-ml">Clinic locations</div></div><div><div class="case-num">20 wks</div><div class="case-ml">Full deployment</div></div><div><div class="case-num">4.8★</div><div class="case-ml">Patient app rating</div></div></div><div class="case-tags"><span class="c-tag">React</span><span class="c-tag">Node.js</span><span class="c-tag">WebRTC</span><span class="c-tag">PostgreSQL</span></div></div>
+    </div>
+    <div class="sp-divider"></div>
+    <div style="text-align:center"><p style="font-size:1rem;color:var(--muted);margin-bottom:1.4rem">Want to see how we'd approach your specific challenge?</p><a href="#contact" class="btn-primary">Discuss Your Project →</a></div>
+  </div>
+</div>
+
+<!-- CAREERS -->
+<div class="subpage" id="page-careers">
+  <div class="subpage-nav">
+    <a class="nav-logo" href="#home">Kace<span>.</span></a>
+    <a class="subpage-back" href="#home">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12 7H2M7 2L2 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back to Home
+    </a>
+  </div>
+  <div class="subpage-inner">
+    <div class="subpage-eyebrow">Join the Team</div>
+    <h1 class="subpage-h1">Build Things That<br>Actually Matter.</h1>
+    <p class="subpage-lead">We're a team of 35 who care about craft, client outcomes, and growing the next generation of Nigerian tech talent. Come build with us.</p>
+    <div class="sp-section-title" style="margin-bottom:1.5rem">Open Roles</div>
+    <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:3rem">
+      <div class="job-card"><div class="job-icon">⚙️</div><div style="flex:1"><div class="job-title">Senior Backend Engineer</div><div class="job-meta">Engineering · Full-time · Abuja (Hybrid)</div><div class="job-tags"><span class="j-pill">Node.js</span><span class="j-pill">Python</span><span class="j-pill">PostgreSQL</span><span class="j-pill">AWS</span><span class="j-pill">5+ yrs</span></div></div><a href="/cdn-cgi/l/email-protection#2142405344445352614a404244554442494f4e4d4e464844520f424e4c1e5254434b4442551c6051514d48424055484e4f1b0172444f484e53016340424a444f4501644f46484f444453" class="job-apply">Apply →</a></div>
+      <div class="job-card"><div class="job-icon">📱</div><div style="flex:1"><div class="job-title">Mobile Engineer (Flutter)</div><div class="job-meta">Engineering · Full-time · Abuja (Hybrid)</div><div class="job-tags"><span class="j-pill">Flutter</span><span class="j-pill">Dart</span><span class="j-pill">Firebase</span><span class="j-pill">3+ yrs</span></div></div><a href="/cdn-cgi/l/email-protection#94f7f5e6f1f1e6e7d4fff5f7f1e0f1f7fcfafbf8fbf3fdf1e7baf7fbf9abe7e1f6fef1f7e0a9d5e4e4f8fdf7f5e0fdfbfaaeb4d2f8e1e0e0f1e6b4d9fbf6fdf8f1b4d1faf3fdfaf1f1e6" class="job-apply">Apply →</a></div>
+      <div class="job-card"><div class="job-icon">☁️</div><div style="flex:1"><div class="job-title">DevOps / Cloud Engineer</div><div class="job-meta">Engineering · Full-time · Abuja (Hybrid)</div><div class="job-tags"><span class="j-pill">AWS</span><span class="j-pill">Terraform</span><span class="j-pill">Kubernetes</span><span class="j-pill">CI/CD</span><span class="j-pill">3+ yrs</span></div></div><a href="/cdn-cgi/l/email-protection#482b293a2d2d3a3b0823292b2d3c2d2b20262724272f212d3b662b2725773b3d2a222d2b3c7509383824212b293c21272672680c2d3e07383b680d262f21262d2d3a" class="job-apply">Apply →</a></div>
+      <div class="job-card"><div class="job-icon">🎨</div><div style="flex:1"><div class="job-title">Product Designer (UI/UX)</div><div class="job-meta">Design · Full-time · Abuja (Hybrid)</div><div class="job-tags"><span class="j-pill">Figma</span><span class="j-pill">User Research</span><span class="j-pill">Design Systems</span><span class="j-pill">3+ yrs</span></div></div><a href="/cdn-cgi/l/email-protection#95f6f4e7f0f0e7e6d5fef4f6f0e1f0f6fdfbfaf9faf2fcf0e6bbf6faf8aae6e0f7fff0f6e1a8d4e5e5f9fcf6f4e1fcfafbafb5c5e7faf1e0f6e1b5d1f0e6fcf2fbf0e7" class="job-apply">Apply →</a></div>
+      <div class="job-card"><div class="job-icon">⚛️</div><div style="flex:1"><div class="job-title">Frontend Engineer (React)</div><div class="job-meta">Engineering · Full-time · Abuja (Hybrid)</div><div class="job-tags"><span class="j-pill">React</span><span class="j-pill">TypeScript</span><span class="j-pill">Next.js</span><span class="j-pill">3+ yrs</span></div></div><a href="/cdn-cgi/l/email-protection#036062716666717043686260667766606b6d6c6f6c646a66702d606c6e3c707661696660773e4273736f6a6062776a6c6d392345716c6d77666d6723466d646a6d666671" class="job-apply">Apply →</a></div>
+      <div class="job-card"><div class="job-icon">🧭</div><div style="flex:1"><div class="job-title">Technical Project Manager</div><div class="job-meta">Operations · Full-time · Abuja (On-site)</div><div class="job-tags"><span class="j-pill">Agile / Scrum</span><span class="j-pill">Client-facing</span><span class="j-pill">Jira</span><span class="j-pill">4+ yrs</span></div></div><a href="/cdn-cgi/l/email-protection#eb888a998e8e9998ab808a888e9f8e8883858487848c828e98c5888486d4989e89818e889fd6aa9b9b8782888a9f828485d1cbbf8e88838582888a87cbbb9984818e889fcba68a858a8c8e99" class="job-apply">Apply →</a></div>
+    </div>
+    <div class="sp-section-title" style="margin-bottom:1.5rem">Why Work Here</div>
+    <div class="perks">
+      <div class="perk"><div class="perk-icon">💰</div><div><div class="perk-title">Competitive Pay</div><div class="perk-desc">Market-rate salaries benchmarked to Nigerian and international tech compensation data.</div></div></div>
+      <div class="perk"><div class="perk-icon">🏠</div><div><div class="perk-title">Hybrid Flexibility</div><div class="perk-desc">3 days in-office, 2 remote. We trust you to manage your time and deliver.</div></div></div>
+      <div class="perk"><div class="perk-icon">📚</div><div><div class="perk-title">Learning Budget</div><div class="perk-desc">₦300,000/year per person for courses, certifications, books, and conferences.</div></div></div>
+      <div class="perk"><div class="perk-icon">🏥</div><div><div class="perk-title">Health Insurance</div><div class="perk-desc">Full HMO coverage for you and one dependent, with access to top-tier hospitals.</div></div></div>
+      <div class="perk"><div class="perk-icon">🌱</div><div><div class="perk-title">Real Growth</div><div class="perk-desc">We promote from within. Many of our senior engineers started as mid-levels here.</div></div></div>
+      <div class="perk"><div class="perk-icon">🎉</div><div><div class="perk-title">Great Culture</div><div class="perk-desc">Monthly team events, annual retreat, and a team that genuinely likes working together.</div></div></div>
+    </div>
+    <div style="background:var(--ink);color:var(--paper);border-radius:16px;padding:2.5rem;text-align:center;margin-top:3rem">
+      <h3 style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;margin-bottom:.6rem">Don't see your role?</h3>
+      <p style="font-size:.92rem;color:rgba(245,242,236,.6);margin-bottom:1.4rem">We're always interested in exceptional talent. Send us your CV and we'll keep you in mind.</p>
+      <a href="/cdn-cgi/l/email-protection#2c4f4d5e49495e5f6c474d4f4958494f44424340434b45495f024f4341135f594e46494f58117f5c494f59404d58455a490c6d5c5c40454f4d58454342" class="btn-primary">Send Speculative CV →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+  MAIN PAGE
+═══════════════════════════════════ -->
+<div id="main-page">
+
+<nav id="navbar">
+  <a class="nav-logo" href="#home">Kace<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#why">Why Us</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="#industries">Industries</a></li>
+    <li><a href="#contact" class="nav-cta">Get in Touch</a></li>
+  </ul>
+  <button class="nav-burger" id="burger" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE MENU DRAWER -->
+<div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+  <div class="mobile-menu-inner">
+    <ul class="mobile-nav-links">
+      <li><a href="#services">Services <span class="mn-arrow">→</span></a></li>
+      <li><a href="#why">Why Us <span class="mn-arrow">→</span></a></li>
+      <li><a href="#process">Process <span class="mn-arrow">→</span></a></li>
+      <li><a href="#industries">Industries <span class="mn-arrow">→</span></a></li>
+      <li><a href="#about">About Us <span class="mn-arrow">→</span></a></li>
+      <li><a href="#case-studies">Case Studies <span class="mn-arrow">→</span></a></li>
+    </ul>
+    <div class="mobile-cta-row">
+      <a href="#contact" class="mobile-cta">Start a Project →</a>
+      <a href="#careers" class="mobile-cta outline">We're Hiring</a>
+    </div>
+    <div class="mobile-social">
+      <a href="https://www.linkedin.com/company/kace-technologies" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://twitter.com/kacetechnologies" target="_blank" rel="noopener">Twitter</a>
+      <a href="https://github.com/kace-technologies" target="_blank" rel="noopener">GitHub</a>
+      <a href="mailto:hello@kacetechnologies.com">Email</a>
+    </div>
+    <div class="mobile-footer-note">© 2025 Kace Technologies Ltd · Abuja, Nigeria 🇳🇬</div>
+  </div>
+</div>
+
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-left" style="position:relative">
+    <div class="hero-eyebrow">Abuja, Nigeria · Est. 2018</div>
+    <h1 class="hero-h1">We Build<br><em>Software</em><br>That Scales.</h1>
+    <p class="hero-sub">Kace Technologies is a full-service software consulting and development firm — turning bold ideas into reliable, high-performance products.</p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn-primary">Start a Project</a>
+      <a href="#services" class="btn-outline">Our Services <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-card-stack">
+      <div class="hcard hcard-1"><div class="hcard-icon">📊</div><div class="hcard-label">Delivered Projects</div><div class="hcard-value">120+</div><div class="hcard-sub">Across 8 industries</div></div>
+      <div class="hcard hcard-2"><div class="hcard-icon">🚀</div><div class="hcard-label">Avg. Time to Market</div><div class="hcard-value">12 wks</div><div class="hcard-sub">From brief to launch</div></div>
+      <div class="hcard hcard-3"><div class="hcard-icon">⭐</div><div class="hcard-label">Client Satisfaction</div><div class="hcard-value">98%</div><div class="hcard-sub">Based on project surveys</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <span class="ticker-item"><span class="ticker-dot"></span>Custom Software Development</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Cloud Architecture</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Mobile Apps</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>API Integration</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Data Engineering</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Product Strategy</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>DevOps & CI/CD</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>UI / UX Design</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Custom Software Development</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Cloud Architecture</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Mobile Apps</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>API Integration</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Data Engineering</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Product Strategy</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>DevOps & CI/CD</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>UI / UX Design</span>
+  </div>
+</div>
+
+<section id="services">
+  <div class="section-label reveal">What We Do</div>
+  <h2 class="section-h2 reveal">End-to-End<br>Technology Services</h2>
+  <p class="section-intro reveal">From strategy to deployment — we cover every phase of the software lifecycle with precision and care.</p>
+  <div class="services-grid reveal">
+    <div class="service-card"><div class="service-num">01</div><div class="service-icon">⚙️</div><div class="service-title">Custom Software Development</div><div class="service-desc">Bespoke web and desktop applications built around your unique workflows and business logic. No bloat, just purpose-built software.</div></div>
+    <div class="service-card"><div class="service-num">02</div><div class="service-icon">📱</div><div class="service-title">Mobile App Development</div><div class="service-desc">Native and cross-platform iOS & Android apps that deliver seamless user experiences and robust backend integrations.</div></div>
+    <div class="service-card"><div class="service-num">03</div><div class="service-icon">☁️</div><div class="service-title">Cloud & DevOps</div><div class="service-desc">Architecture design, cloud migration, CI/CD pipelines, and infrastructure automation on AWS, GCP, and Azure.</div></div>
+    <div class="service-card"><div class="service-num">04</div><div class="service-icon">🔌</div><div class="service-title">API & Systems Integration</div><div class="service-desc">Connecting disparate systems, third-party services, and legacy platforms into a unified, reliable data ecosystem.</div></div>
+    <div class="service-card"><div class="service-num">05</div><div class="service-icon">📐</div><div class="service-title">UI/UX Design</div><div class="service-desc">Research-driven interface design that balances aesthetics with usability — crafting products people actually enjoy using.</div></div>
+    <div class="service-card"><div class="service-num">06</div><div class="service-icon">🧭</div><div class="service-title">Technology Consulting</div><div class="service-desc">Strategic advisory for CTOs and founders — stack selection, architecture reviews, roadmap planning, and digital transformation.</div></div>
+  </div>
+</section>
+
+<section id="why">
+  <div class="section-label reveal">Why Kace</div>
+  <h2 class="section-h2 reveal">Built Different,<br>From Day One.</h2>
+  <div class="why-layout">
+    <div class="why-visual reveal">
+      <div class="why-blob why-blob-1"></div>
+      <div class="why-blob why-blob-2"></div>
+      <div class="why-stat-grid">
+        <div class="stat-box"><div class="stat-n">120<span>+</span></div><div class="stat-label">Projects successfully delivered</div></div>
+        <div class="stat-box"><div class="stat-n">6<span>+</span></div><div class="stat-label">Years in business</div></div>
+        <div class="stat-box"><div class="stat-n">35<span>+</span></div><div class="stat-label">Engineers on the team</div></div>
+      </div>
+    </div>
+    <div class="why-right reveal">
+      <p class="section-intro">We're not just contractors — we're partners who invest in your outcomes as much as you do.</p>
+      <ul class="why-points">
+        <li><div class="why-check">✓</div><div><div class="why-pt-title">Nigeria-based, globally competitive</div><div class="why-pt-desc">Local presence with international standards. We understand the Nigerian market and build for scale beyond it.</div></div></li>
+        <li><div class="why-check">✓</div><div><div class="why-pt-title">Transparent, fixed-scope delivery</div><div class="why-pt-desc">Clear milestones, realistic timelines, and honest communication — no surprise invoices, no moving goalposts.</div></div></li>
+        <li><div class="why-check">✓</div><div><div class="why-pt-title">Engineering quality you can trust</div><div class="why-pt-desc">Clean code, thorough testing, and architecture reviews built into every engagement — not bolted on at the end.</div></div></li>
+        <li><div class="why-check">✓</div><div><div class="why-pt-title">Post-launch support included</div><div class="why-pt-desc">We don't disappear after go-live. Our retainer and maintenance plans keep your product healthy long-term.</div></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="process">
+  <div class="section-label reveal">How We Work</div>
+  <h2 class="section-h2 reveal">A Process Built<br>for Clarity.</h2>
+  <div class="process-track reveal">
+    <div class="process-step"><div class="process-num">01</div><div class="process-title">Discovery</div><div class="process-desc">We dive deep into your business goals, user needs, and technical constraints to define what to build — and why.</div></div>
+    <div class="process-step"><div class="process-num">02</div><div class="process-title">Design & Plan</div><div class="process-desc">Architecture blueprints, wireframes, and a detailed project plan with milestones and risk assessment.</div></div>
+    <div class="process-step"><div class="process-num">03</div><div class="process-title">Build & Iterate</div><div class="process-desc">Agile sprints with weekly demos. You see progress early and often — and shape the product as it grows.</div></div>
+    <div class="process-step"><div class="process-num">04</div><div class="process-title">Launch & Grow</div><div class="process-desc">Smooth deployments, monitoring setup, team handoff documentation, and ongoing support to keep you moving.</div></div>
+  </div>
+</section>
+
+<section id="industries">
+  <div class="section-label reveal">Industries</div>
+  <h2 class="section-h2 reveal">We Know Your Space.</h2>
+  <p class="section-intro reveal">Deep domain experience across the sectors driving Nigeria's digital economy.</p>
+  <div class="industries-scroll reveal">
+    <div class="ind-pill"><span class="ind-pill-icon">🏦</span>Fintech & Banking</div>
+    <div class="ind-pill"><span class="ind-pill-icon">🏥</span>Healthcare & MedTech</div>
+    <div class="ind-pill"><span class="ind-pill-icon">🛒</span>E-commerce & Retail</div>
+    <div class="ind-pill"><span class="ind-pill-icon">📚</span>EdTech & Learning</div>
+    <div class="ind-pill"><span class="ind-pill-icon">🚚</span>Logistics & Supply Chain</div>
+    <div class="ind-pill"><span class="ind-pill-icon">🏢</span>Enterprise & SaaS</div>
+    <div class="ind-pill"><span class="ind-pill-icon">⚡</span>Energy & Utilities</div>
+    <div class="ind-pill"><span class="ind-pill-icon">🌾</span>Agriculture & AgriTech</div>
+    <div class="ind-pill"><span class="ind-pill-icon">🏛️</span>Government & NGOs</div>
+  </div>
+</section>
+
+<section id="stack">
+  <div class="section-label reveal">Tech Stack</div>
+  <h2 class="section-h2 reveal">The Tools We<br>Master.</h2>
+  <div class="stack-grid reveal">
+    <div class="stack-item"><span class="s-icon">⚛️</span>React</div>
+    <div class="stack-item"><span class="s-icon">🟢</span>Node.js</div>
+    <div class="stack-item"><span class="s-icon">🐍</span>Python</div>
+    <div class="stack-item"><span class="s-icon">☕</span>Java</div>
+    <div class="stack-item"><span class="s-icon">📱</span>Flutter</div>
+    <div class="stack-item"><span class="s-icon">🔷</span>TypeScript</div>
+    <div class="stack-item"><span class="s-icon">🐘</span>PostgreSQL</div>
+    <div class="stack-item"><span class="s-icon">🍃</span>MongoDB</div>
+    <div class="stack-item"><span class="s-icon">🟠</span>AWS</div>
+    <div class="stack-item"><span class="s-icon">🐳</span>Docker</div>
+    <div class="stack-item"><span class="s-icon">☸️</span>Kubernetes</div>
+    <div class="stack-item"><span class="s-icon">🔥</span>Firebase</div>
+    <div class="stack-item"><span class="s-icon">💎</span>Ruby</div>
+    <div class="stack-item"><span class="s-icon">🐹</span>Go</div>
+    <div class="stack-item"><span class="s-icon">⚡</span>C</div>
+  </div>
+</section>
+
+<section id="testimonials">
+  <div class="section-label reveal">Client Stories</div>
+  <h2 class="section-h2 reveal">What Our Clients Say.</h2>
+  <div class="testi-grid reveal">
+    <div class="testi-card"><div class="testi-quote">"</div><p class="testi-body">Kace rebuilt our entire lending platform in under four months. The quality of code and architecture was above and beyond what we expected from a local firm. We've since expanded our retainer significantly.</p><div class="testi-author"><div class="testi-avatar">AO</div><div><div class="testi-name">Adaeze Okafor</div><div class="testi-role">CTO, LendPath Finance · Lagos</div></div></div></div>
+    <div class="testi-card"><div class="testi-quote">"</div><p class="testi-body">Working with Kace felt like having a real technical co-founder. They pushed back when our ideas didn't make sense, suggested better approaches, and delivered something we're genuinely proud of.</p><div class="testi-author"><div class="testi-avatar">EI</div><div><div class="testi-name">Emmanuel Idowu</div><div class="testi-role">Founder, ScholarBridge · Abuja</div></div></div></div>
+    <div class="testi-card"><div class="testi-quote">"</div><p class="testi-body">The Kace team integrated our ERP with three external logistics APIs in record time. Their communication was excellent throughout, and they documented everything so our internal team could own it post-launch.</p><div class="testi-author"><div class="testi-avatar">NK</div><div><div class="testi-name">Ngozi Kalu</div><div class="testi-role">Head of Operations, SwiftHaul · Port Harcourt</div></div></div></div>
+  </div>
+</section>
+
+<section id="cta-band">
+  <h2 class="cta-h2 reveal">Ready to Build<br>Something Great?</h2>
+  <p class="cta-sub reveal">Tell us about your project and we'll respond within 24 hours.</p>
+  <a href="#contact" class="btn-dark reveal">Let's Talk →</a>
+</section>
+
+<section id="contact">
+  <div class="section-label reveal">Contact Us</div>
+  <h2 class="section-h2 reveal">Get In Touch.</h2>
+  <div class="contact-layout">
+    <div class="reveal">
+      <p class="section-intro">We'd love to hear about your project. Reach out through any of the channels below or fill in the form.</p>
+      <div class="contact-info-items">
+        <div class="ci-item"><div class="ci-dot">📍</div><div><div class="ci-label">Location</div><div class="ci-val"><a href="https://maps.google.com/?q=Gwarinpa+Estate+Abuja+Nigeria" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">Plot 42, Gwarinpa Estate<br>Abuja, FCT — Nigeria</a></div></div></div>
+        <div class="ci-item"><div class="ci-dot">✉️</div><div><div class="ci-label">Email</div><div class="ci-val"><a href="/cdn-cgi/l/email-protection#bbd3ded7d7d4fbd0dad8decfded8d3d5d4d7d4dcd2dec895d8d4d6" style="color:inherit;text-decoration:none"><span class="__cf_email__" data-cfemail="81e9e4ededeec1eae0e2e4f5e4e2e9efeeedeee6e8e4f2afe2eeec">[email&#160;protected]</span></a></div></div></div>
+        <div class="ci-item"><div class="ci-dot">📞</div><div><div class="ci-label">Phone / WhatsApp</div><div class="ci-val"><a href="tel:+2348100000000" style="color:inherit;text-decoration:none">+234 (0) 810 000 0000</a></div></div></div>
+        <div class="ci-item"><div class="ci-dot">🕐</div><div><div class="ci-label">Business Hours</div><div class="ci-val">Mon – Fri, 9am – 6pm WAT</div></div></div>
+      </div>
+    </div>
+    <div class="reveal">
+      <div class="contact-form">
+        <div class="form-row">
+          <div class="form-group"><label>Full Name</label><input type="text" placeholder="John Doe" /></div>
+          <div class="form-group"><label>Email</label><input type="email" placeholder="john@company.com" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Company</label><input type="text" placeholder="Your company (optional)" /></div>
+          <div class="form-group"><label>Service Needed</label><select><option value="">Select a service</option><option>Custom Software Development</option><option>Mobile App Development</option><option>Cloud & DevOps</option><option>API & Systems Integration</option><option>UI/UX Design</option><option>Technology Consulting</option></select></div>
+        </div>
+        <div class="form-group"><label>Tell us about your project</label><textarea placeholder="Describe what you're building, your timeline, and any relevant details…"></textarea></div>
+        <button class="form-submit" onclick="handleSubmit(this)">Send Message →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-top">
+    <div>
+      <a class="footer-logo" href="#home">Kace<span>.</span></a>
+      <p class="footer-tagline">Software consulting and development for ambitious organisations — headquartered in Abuja, serving Africa and beyond.</p>
+    </div>
+    <div>
+      <div class="footer-col-title">Services</div>
+      <ul class="footer-links">
+        <li><a href="#services-page">Custom Development</a></li>
+        <li><a href="#services-page">Mobile Apps</a></li>
+        <li><a href="#services-page">Cloud & DevOps</a></li>
+        <li><a href="#services-page">API Integration</a></li>
+        <li><a href="#services-page">UI/UX Design</a></li>
+        <li><a href="#services-page">Consulting</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Company</div>
+      <ul class="footer-links">
+        <li><a href="#about">About Us</a></li>
+        <li><a href="#team">Our Team</a></li>
+        <li><a href="#careers">Careers</a></li>
+        <li><a href="#blog">Blog</a></li>
+        <li><a href="#case-studies">Case Studies</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Connect</div>
+      <ul class="footer-links">
+        <li><a href="https://www.linkedin.com/company/kace-technologies" target="_blank" rel="noopener">LinkedIn</a></li>
+        <li><a href="https://twitter.com/kacetechnologies" target="_blank" rel="noopener">Twitter / X</a></li>
+        <li><a href="https://github.com/kace-technologies" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="/cdn-cgi/l/email-protection#6e060b0202012e050f0d0b1a0b0d060001020109070b1d400d0103"><span class="__cf_email__" data-cfemail="abc3cec7c7c4ebc0cac8cedfcec8c3c5c4c7c4ccc2ced885c8c4c6">[email&#160;protected]</span></a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Kace Technologies Ltd. All rights reserved.</span>
+    <span>Made with care in <a href="https://maps.google.com/?q=Abuja,Nigeria" target="_blank" rel="noopener">Abuja, Nigeria 🇳🇬</a></span>
+  </div>
+</footer>
+
+</div><!-- /#main-page -->
+
+<script>
+  /* ── MOBILE MENU ── */
+  const burger = document.getElementById('burger');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  function openMobileMenu() {
+    burger.classList.add('open');
+    burger.setAttribute('aria-expanded', 'true');
+    mobileMenu.classList.add('open');
+    mobileMenu.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeMobileMenu() {
+    burger.classList.remove('open');
+    burger.setAttribute('aria-expanded', 'false');
+    mobileMenu.classList.remove('open');
+    mobileMenu.setAttribute('aria-hidden', 'true');
+    // don't force overflow here — hash routing manages it
+    if (!document.querySelector('.subpage.active')) {
+      document.body.style.overflow = '';
+    }
+  }
+  burger.addEventListener('click', () => {
+    burger.classList.contains('open') ? closeMobileMenu() : openMobileMenu();
+  });
+  mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => closeMobileMenu()));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMobileMenu(); });
+
+  /* cursor */
+  const cursor = document.getElementById('cursor');
+  document.addEventListener('mousemove', e => { cursor.style.left = e.clientX+'px'; cursor.style.top = e.clientY+'px'; });
+  function attachCursor() {
+    document.querySelectorAll('a,button,.service-card,.ind-pill,.stack-item,.team-card,.blog-card,.job-card,.case-card').forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+    });
+  }
+  attachCursor();
+
+  /* navbar scroll */
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', window.scrollY > 60));
+
+  /* scroll reveal */
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { setTimeout(() => e.target.classList.add('visible'), 80); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(r => io.observe(r));
+  document.querySelectorAll('.services-grid .service-card, .testi-grid .testi-card').forEach((c,i) => { c.style.transitionDelay=(i*.07)+'s'; c.classList.add('reveal'); io.observe(c); });
+
+  /* form */
+  function handleSubmit(btn) { btn.textContent='Sending…'; btn.disabled=true; setTimeout(()=>{ btn.textContent='Message Sent ✓'; btn.style.background='var(--teal)'; },1400); }
+
+  /* ── HASH ROUTING ── */
+  const pageMap = {
+    'about':         'page-about',
+    'services-page': 'page-services-page',
+    'team':          'page-team',
+    'blog':          'page-blog',
+    'case-studies':  'page-case-studies',
+    'careers':       'page-careers',
+  };
+
+  function showPage(key) {
+    const id = pageMap[key];
+    if (!id) return false;
+    document.querySelectorAll('.subpage').forEach(p => p.classList.remove('active'));
+    const page = document.getElementById(id);
+    page.classList.add('active');
+    page.scrollTop = 0;
+    document.body.style.overflow = 'hidden';
+    attachCursor();
+    return true;
+  }
+
+  function closePage() {
+    document.querySelectorAll('.subpage').forEach(p => p.classList.remove('active'));
+    document.body.style.overflow = '';
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
+
+  function handleHash() {
+    const hash = window.location.hash.replace('#','');
+    if (!hash || hash === 'home') { closePage(); return; }
+    if (showPage(hash)) return;
+    closePage();
+    requestAnimationFrame(() => {
+      const el = document.getElementById(hash);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+
+  window.addEventListener('hashchange', handleHash);
+  window.addEventListener('load', handleHash);
+
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+    const href = a.getAttribute('href');
+    if (!href || !href.startsWith('#')) return;
+    const hash = href.slice(1);
+    if (pageMap[hash]) {
+      e.preventDefault();
+      history.pushState(null,'','#'+hash);
+      showPage(hash);
+    } else if (hash === 'home' || hash === '') {
+      e.preventDefault();
+      closePage();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+</script>
+</body>
+</html>
